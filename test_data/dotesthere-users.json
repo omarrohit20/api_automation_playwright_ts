@@ -1,0 +1,47 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "ankur.automation@dotesthere.com",
+      "first_name": "George",
+      "last_name": "Bluth"
+    },
+    {
+      "id": 2,
+      "email": "janet.weaver@dotesthere.com",
+      "first_name": "Janet",
+      "last_name": "Weaver"
+    },
+    {
+      "id": 3,
+      "email": "emma.wong@dotesthere.com",
+      "first_name": "Emma",
+      "last_name": "Wong"
+    }
+  ],
+  "createUserPayload": {
+    "name": "John Developer",
+    "job": "Senior Developer"
+  },
+  "updateUserPayload": {
+    "name": "John Updated",
+    "job": "Tech Lead"
+  },
+  "paginationTestCases": [
+    {
+      "page": 1,
+      "limit": 10,
+      "description": "First page with 10 users"
+    },
+    {
+      "page": 2,
+      "limit": 10,
+      "description": "Second page with 10 users"
+    },
+    {
+      "page": 1,
+      "limit": 5,
+      "description": "First page with 5 users"
+    }
+  ]
+}
