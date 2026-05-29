@@ -1,9 +1,13 @@
 // users.ts - Users API wrapper for Playwright
-import { APIRequestContext } from '@playwright/test';
+import { APIRequestContext, request } from '@playwright/test';
 import { convertToJson } from './utils/common';
 import { sendPostRequest, sendGetRequest, sendPutRequest, sendPatchRequest, sendDeleteRequest } from './utils/requests';
 
 export class Users {
+  private baseUrl: string = '';
+  private context?: APIRequestContext;
+  private contextReady?: Promise<void>;
+
   public userPostPayloadRequest: any;
   public userPostResponse: any;
   public userGetResponse: any;
@@ -12,9 +16,46 @@ export class Users {
   public dotesthereUserResponse: any;
   public dotesthereCreateUserResponse: any;
   public dotesthereUpdateUserResponse: any;
+  
+  constructor(context?: APIRequestContext, baseUrl?: string) {
+    const hostConfig = require('../config/hosts.json');
+    const env = process.env.ENV || 'dev';
 
-  constructor(private context: APIRequestContext, private baseUrl: string = 'https://dotesthere.com') {
+    if (baseUrl) {
+      this.baseUrl = baseUrl;
+    } else if (hostConfig[env] && hostConfig[env].dotesthere) {
+      this.baseUrl = hostConfig[env].dotesthere;
+    }
+
+    if (context) {
+      this.context = context;
+    } else {
+      this.contextReady = this.initContext();
+    }
+
     this.initVariables();
+  }
+
+  async initContext(): Promise<void> {
+    this.context = await request.newContext({
+      baseURL: this.baseUrl,
+      extraHTTPHeaders: {
+        'Accept': 'application/json'
+      }
+    });
+  }
+
+  private async ensureContext(): Promise<void> {
+    if (this.context) {
+      return;
+    }
+    if (!this.contextReady) {
+      throw new Error('API request context was not initialized.');
+    }
+    await this.contextReady;
+    if (!this.context) {
+      throw new Error('Failed to initialize API request context.');
+    }
   }
 
   dotesthereUsersUrl(): string {
@@ -22,27 +63,27 @@ export class Users {
   }
 
   async getUsersList(page: number = 1, limit: number = 10): Promise<any> {
-    const response = await sendGetRequest(this.context, `${this.dotesthereUsersUrl()}?page=${page}&limit=${limit}`);
+    const response = await sendGetRequest(this.context!, `${this.dotesthereUsersUrl()}?page=${page}&limit=${limit}`);
     return response;
   }
 
   async postUserDotesthere(user: any, failOnStatusCode: boolean = true): Promise<any> {
-    const response = await sendPostRequest(this.context, this.dotesthereUsersUrl(), user, undefined, failOnStatusCode);
+    const response = await sendPostRequest(this.context!, this.dotesthereUsersUrl(), user, undefined, failOnStatusCode);
     return response;
   }
 
   async getUserDotesthere(id: string, failOnStatusCode: boolean = true): Promise<any> {
-    const response = await sendGetRequest(this.context, `${this.dotesthereUsersUrl()}/${id}`, undefined, failOnStatusCode);
+    const response = await sendGetRequest(this.context!, `${this.dotesthereUsersUrl()}/${id}`, undefined, failOnStatusCode);
     return response;
   }
 
   async putUserDotesthere(id: string, user: any, failOnStatusCode: boolean = true): Promise<any> {
-    const response = await sendPutRequest(this.context, `${this.dotesthereUsersUrl()}/${id}`, user, failOnStatusCode);
+    const response = await sendPutRequest(this.context!, `${this.dotesthereUsersUrl()}/${id}`, user, failOnStatusCode);
     return response;
   }
 
   async deleteUserDotesthere(id: string, failOnStatusCode: boolean = true): Promise<any> {
-    const response = await sendDeleteRequest(this.context, `${this.dotesthereUsersUrl()}/${id}`, failOnStatusCode);
+    const response = await sendDeleteRequest(this.context!, `${this.dotesthereUsersUrl()}/${id}`, failOnStatusCode);
     return response;
   }
 

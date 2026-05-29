@@ -1,10 +1,12 @@
 {
     "dev": {
         "reqres": "reqres.in",
-        "numberconversion_host": "www.dataaccess.com"
+        "numberconversion_host": "www.dataaccess.com",
+        "dotesthere": "https://dotesthere.com"
     },
     "qa": {
         "reqres": "reqres.in",
-        "numberconversion_host": "www.dataaccess.com"
+        "numberconversion_host": "www.dataaccess.com",
+        "dotesthere": "https://dotesthere.com"
     }
 }

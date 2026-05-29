@@ -6,10 +6,11 @@ test.describe('Users Dotesthere', () => {
   let users: Users;
 
   test.beforeAll(async ({ playwright }) => {
-    const context = await playwright.request.newContext({
-      baseURL: 'https://dotesthere.com'
-    });
-    users = new Users(context, 'https://dotesthere.com');
+    // const context = await playwright.request.newContext({
+    //   baseURL: 'https://dotesthere.com'
+    // });
+    // users = new Users(context, 'https://dotesthere.com');
+    users = new Users();
   });
 
   test.describe('Dotesthere Users API', () => {
