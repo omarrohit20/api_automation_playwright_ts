@@ -1,6 +1,6 @@
 // users.ts - Users API wrapper for Playwright
 import { APIRequestContext, request } from '@playwright/test';
-import { convertToJson } from './utils/common';
+import { convertToJson, readTestDataJson } from './utils/common';
 import { sendPostRequest, sendGetRequest, sendPutRequest, sendPatchRequest, sendDeleteRequest } from './utils/requests';
 
 export class Users {
@@ -92,47 +92,13 @@ export class Users {
 
     this.userPostResponse = convertToJson('{\n      "name": "",\n      "job": "",\n      "id": "should_not_be_null",\n      "createdAt": "skip"\n    }');
 
-    this.userGetResponse = convertToJson('{\n      "data": {\n        "id": "should_not_be_null",\n        "email": "janet.weaver@reqres.in",\n        "first_name": "Janet",\n        "last_name": "Weaver",\n        "avatar": "https://reqres.in/img/faces/2-image.jpg"\n      },\n      "support": {\n        "url": "https://reqres.in/#support-heading",\n        "text": "To keep ReqRes free, contributions towards server costs are appreciated!"\n      }\n    }');
+    this.userGetResponse = readTestDataJson('user_get_response.json');
 
-    this.usersListResponse = convertToJson(`{\n      "page": 1,\n      "per_page": 10,\n      "total": "should_not_be_null",\n      "total_pages": "should_not_be_null",\n      "data": [\n        {\n          "id": "should_not_be_null",\n          "email": "match_regex:/^[^\\\\s@]+@[^\\\\s@]+\\\\.[^\\\\s@]+$/",\n          "first_name": "only_chars",\n          "last_name": "only_chars",\n          "avatar": "match_regex:/^https?:\\\\/\\\\/.*\\\\.(jpg|png|jpeg|gif)$/"\n        }\n      ]\n    }`);
+    this.usersListResponse = readTestDataJson('users_list_response.json');
 
-    this.dotesthereUsersListResponse = {
-      page: 1,
-      per_page: 10,
-      total: 'should_not_be_null',
-      total_pages: 'should_not_be_null',
-      data: [
-        {
-          id: 'should_not_be_null',
-          email: 'match_regex:/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/',
-          first_name: 'only_chars',
-          last_name: 'only_chars',
-          avatar: 'match_regex:/^https?:\\/\\/.*\\.(jpg|png|jpeg|gif)$/'
-        }
-      ]
-    };
-
-    this.dotesthereUserResponse = {
-      data: {
-        id: 'should_not_be_null',
-        email: 'match_regex:/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/',
-        first_name: 'only_chars',
-        last_name: 'only_chars',
-        avatar: 'match_regex:/^https?:\\/\\/.*\\.(jpg|png|jpeg|gif)$/'
-      }
-    };
-
-    this.dotesthereCreateUserResponse = {
-      name: '',
-      job: '',
-      id: 'should_not_be_null',
-      createdAt: 'skip'
-    };
-
-    this.dotesthereUpdateUserResponse = {
-      name: '',
-      job: '',
-      updatedAt: 'skip'
-    };
+    this.dotesthereUsersListResponse = readTestDataJson('dotesthere_users_list_response.json');
+    this.dotesthereUserResponse = readTestDataJson('dotesthere_user_response.json');
+    this.dotesthereCreateUserResponse = readTestDataJson('dotesthere_create_user_response.json');
+    this.dotesthereUpdateUserResponse = readTestDataJson('dotesthere_update_user_response.json');
   }
 }

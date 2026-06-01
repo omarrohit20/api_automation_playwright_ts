@@ -54,6 +54,12 @@ export function convertToJson(object: any): any {
   return object;
 }
 
+export function readTestDataJson(filename: string): any {
+  const fixturePath = path.join(__dirname, '../../test_data', filename);
+  const fileContent = fs.readFileSync(fixturePath, 'utf-8');
+  return JSON.parse(fileContent);
+}
+
 export function readFixtureFile(filename: string): any {
   const fixturePath = path.join(__dirname, '../fixtures', filename);
   const fileContent = fs.readFileSync(fixturePath, 'utf-8');

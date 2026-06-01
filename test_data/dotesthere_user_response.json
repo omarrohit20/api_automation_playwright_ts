@@ -1,0 +1,9 @@
+{
+  "data": {
+    "id": "should_not_be_null",
+    "email": "match_regex:/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/",
+    "first_name": "only_chars",
+    "last_name": "only_chars",
+    "avatar": "match_regex:/^https?:\\/\\/.*\\.(jpg|png|jpeg|gif)$/"
+  }
+}
