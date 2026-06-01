@@ -63,26 +63,31 @@ export class Users {
   }
 
   async getUsersList(page: number = 1, limit: number = 10): Promise<any> {
+    await this.ensureContext();
     const response = await sendGetRequest(this.context!, `${this.dotesthereUsersUrl()}?page=${page}&limit=${limit}`);
     return response;
   }
 
   async postUserDotesthere(user: any, failOnStatusCode: boolean = true): Promise<any> {
+    await this.ensureContext();
     const response = await sendPostRequest(this.context!, this.dotesthereUsersUrl(), user, undefined, failOnStatusCode);
     return response;
   }
 
   async getUserDotesthere(id: string, failOnStatusCode: boolean = true): Promise<any> {
+    await this.ensureContext();
     const response = await sendGetRequest(this.context!, `${this.dotesthereUsersUrl()}/${id}`, undefined, failOnStatusCode);
     return response;
   }
 
   async putUserDotesthere(id: string, user: any, failOnStatusCode: boolean = true): Promise<any> {
+    await this.ensureContext();
     const response = await sendPutRequest(this.context!, `${this.dotesthereUsersUrl()}/${id}`, user, failOnStatusCode);
     return response;
   }
 
   async deleteUserDotesthere(id: string, failOnStatusCode: boolean = true): Promise<any> {
+    await this.ensureContext();
     const response = await sendDeleteRequest(this.context!, `${this.dotesthereUsersUrl()}/${id}`, failOnStatusCode);
     return response;
   }
