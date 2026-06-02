@@ -59,119 +59,167 @@ export async function verifyResponseTemplate(
   }
 }
 
-export function verifyResponseMatchExpected(actualResponse: any, expectedResponse: any): void {
+export function verifyResponseMatchExpected(
+  actualResponse: unknown,
+  expectedResponse: unknown
+): void {
   if (Array.isArray(actualResponse) && Array.isArray(expectedResponse)) {
-    if (expectedResponse.length === 1) {
-      const template = expectedResponse[0];
-      actualResponse.forEach((actual, index) => {
-        compareResponseHashes(actual, template, `[${index}]`);
-      });
-    } else {
-      actualResponse.forEach((actual, index) => {
-        compareResponseHashes(actual, expectedResponse[index], `[${index}]`);
-      });
-      expectedResponse.forEach((expected, index) => {
-        compareResponseHashes(actualResponse[index], expected, `[${index}]`);
-      });
-    }
+    actualResponse.forEach((actual, index) => {
+      compareResponseHashes(actual, expectedResponse[index])
+    })
+
+    expectedResponse.forEach((expected, index) => {
+      compareResponseHashes(actualResponse[index], expected)
+    })
   } else {
-    compareResponseHashes(actualResponse, expectedResponse);
+    compareResponseHashes(actualResponse, expectedResponse)
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                        DEEP COMPARISON ENGINE                               */
+/* -------------------------------------------------------------------------- */
 
 function compareResponseHashes(
   actualHash: unknown,
   expectedHash: unknown,
-  path: string = 'root'
+  path = 'root'
 ): void {
-  // ✅ Skip handling
+  // ✅ skip flag
   if (expectedHash === 'skip') {
-    return;
+    return
   }
 
-  // ✅ Primitive values
+  // ✅ primitive comparison
   if (
     typeof actualHash !== 'object' ||
     actualHash === null ||
     typeof expectedHash !== 'object' ||
     expectedHash === null
   ) {
-    const message = `${path} is wrong! actual: ${actualHash} expected: ${expectedHash}`;
-    compareValues(actualHash, expectedHash, message);
-    return;
+    compareValues(actualHash, expectedHash, path)
+    return
   }
 
-  // ✅ Array handling
+  // ✅ array comparison
   if (Array.isArray(actualHash) && Array.isArray(expectedHash)) {
-    expect(Array.isArray(actualHash)).toBe(true);
-    expect(Array.isArray(expectedHash)).toBe(true);
-
-    const actualArr = actualHash as unknown[];
-    const expectedArr = expectedHash as unknown[];
-
-    if (expectedArr.length === 1) {
-      const template = expectedArr[0];
-      actualArr.forEach((item, index) => {
-        compareResponseHashes(item, template, `${path}[${index}]`);
-      });
-    } else {
-      actualArr.forEach((item, index) => {
-        compareResponseHashes(item, expectedArr[index], `${path}[${index}]`);
-      });
-    }
-
-    return;
-  }
-
-  // ✅ Object handling
-  const actualObj = actualHash as Record<string, unknown>;
-  const expectedObj = expectedHash as Record<string, unknown>;
-
-  // 🔴 ASSERT missing keys
-  for (const key of Object.keys(expectedObj)) {
-    if (!(key in actualObj)) {
-      console.error('❌ MISSING KEY FOUND');
-      console.error(`Path: ${path}.${key}`);
-      console.error(`Expected: ${JSON.stringify(expectedObj[key])}`);
+    if (actualHash.length !== expectedHash.length) {
       throw new Error(
-        `❌ MISSING KEY at ${path}.${key} | expected value: ${JSON.stringify(expectedObj[key])}`
-      );
+        `[SCHEMA MISMATCH] ARRAY LENGTH MISMATCH at ${path}. Expected ${expectedHash.length}, got ${actualHash.length}`
+      )
     }
+
+    actualHash.forEach((item, index) => {
+      compareResponseHashes(
+        item,
+        expectedHash[index],
+        `${path}[${index}]`
+      )
+    })
+    return
   }
 
-  // ✅ Iterate through all keys
-  for (const key of Object.keys(expectedObj)) {
-    const expectedValue = expectedObj[key];
-    const actualValue = actualObj[key];
+  // ✅ object comparison
+  const actualObj = actualHash as Record<string, unknown>
+  const expectedObj = expectedHash as Record<string, unknown>
 
-    if (typeof expectedValue === 'string' && expectedValue === 'should_not_be_null') {
-      expect(actualValue).not.toBeNull();
-      expect(actualValue).toBeDefined();
-    } else if (typeof expectedValue === 'string' && expectedValue === 'only_chars') {
-      expect(typeof actualValue).toBe('string');
-      expect(/^[a-zA-Z\s]+$/.test(String(actualValue))).toBe(true);
-    } else if (typeof expectedValue === 'string' && expectedValue.startsWith('match_regex:')) {
-      const regexStr = expectedValue.replace('match_regex:', '').slice(1, -1);
-      const regex = new RegExp(regexStr);
-      expect(regex.test(String(actualValue))).toBe(true);
-    } else {
-      compareResponseHashes(actualValue, expectedValue, `${path}.${key}`);
+  // 🔴 Missing keys
+  Object.keys(expectedObj).forEach((key) => {
+    if (!(key in actualObj)) {
+      throw new Error(
+        `[SCHEMA MISMATCH]
+Path      : ${path}.${key}
+Problem   : Missing key in response
+Expected  : ${JSON.stringify(expectedObj[key], null, 2)}
+`
+      )
     }
+  })
+
+  // 🔴 Unexpected keys
+//   Object.keys(actualObj).forEach((key) => {
+//     if (!(key in expectedObj)) {
+//       throw new Error(
+//         `[SCHEMA MISMATCH]
+// Path      : ${path}.${key}
+// Problem   : Unexpected key in response
+// Actual    : ${JSON.stringify(actualObj[key], null, 2)}
+// `
+//       )
+//     }
+//   })
+
+  // ✅ deep compare
+  Object.keys(expectedObj).forEach((key) => {
+    compareResponseHashes(
+      actualObj[key],
+      expectedObj[key],
+      `${path}.${key}`
+    )
+  })
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              VALUE MATCHING                                */
+/* -------------------------------------------------------------------------- */
+
+function compareValues(
+  actual: unknown,
+  expected: unknown,
+  path: string
+): void {
+  if (typeof expected === 'string') {
+    handleExpectedString(actual, expected, path)
+    return
+  }
+
+
+  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(
+      `[VALUE MISMATCH]
+Path     : ${path}
+Expected : ${JSON.stringify(expected)}
+Actual   : ${JSON.stringify(actual)}
+ 
+`
+    )
   }
 }
 
-function compareValues(actual: unknown, expected: unknown, message: string): void {
-  if (typeof expected === 'string' && expected === 'should_not_be_null') {
-    expect(actual).not.toBeNull();
-    expect(actual).toBeDefined();
-  } else if (typeof expected === 'string' && expected === 'only_chars') {
-    expect(typeof actual).toBe('string');
-    expect(/^[a-zA-Z\s]+$/.test(String(actual))).toBe(true);
-  } else if (typeof expected === 'string' && expected.startsWith('match_regex:')) {
-    const regexStr = expected.replace('match_regex:', '').slice(1, -1);
-    const regex = new RegExp(regexStr);
-    expect(regex.test(String(actual))).toBe(true);
-  } else {
-    expect(actual).toEqual(expected);
+function handleExpectedString(
+  actual: unknown,
+  expected: string,
+  path: string
+): void {
+  const actualValue = String(actual)
+
+  if (expected.includes('match_regex')) {
+    const match = expected.match(/\/(.+)\//)
+    if (!match) {
+      throw new Error(`Invalid regex at ${path}`)
+    }
+    const re = new RegExp(match[1])
+    expect(actualValue).toMatch(re)
+    return
+  }
+
+  switch (expected) {
+    case 'only_digits':
+      expect(actualValue).toMatch(/^\d+$/)
+      break
+
+    case 'only_chars':
+      expect(actualValue).toMatch(/^[a-zA-Z]+$/)
+      break
+
+    case 'should_not_be_null':
+      expect(actual).not.toBeNull()
+      break
+
+    case 'skip':
+      break
+
+    default:
+      expect(actual).toEqual(expected)
   }
 }
