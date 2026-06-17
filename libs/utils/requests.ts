@@ -101,9 +101,10 @@ export async function sendPostRequest(
 export async function sendDeleteRequest(
   context: APIRequestContext,
   apiUrl: string,
+  headers?: Record<string, string>,
   failOnStatusCode: boolean = true
 ): Promise<APIResponse> {
-  return sendRequest(context, 'DELETE', apiUrl, { failOnStatusCode }, undefined, failOnStatusCode);
+  return sendRequest(context, 'DELETE', apiUrl, { failOnStatusCode }, headers, failOnStatusCode);
 }
 
 export async function sendPatchRequest(
@@ -128,6 +129,7 @@ export async function sendPutRequest(
   context: APIRequestContext,
   apiUrl: string,
   json: any,
+  headers?: Record<string, string>,
   failOnStatusCode: boolean = true
 ): Promise<APIResponse> {
   const payload = json ? (typeof json === 'object' ? json : JSON.parse(json)) : undefined;
@@ -136,7 +138,7 @@ export async function sendPutRequest(
     'PUT',
     apiUrl,
     { data: payload, failOnStatusCode },
-    undefined,
+    headers,
     failOnStatusCode
   );
 }

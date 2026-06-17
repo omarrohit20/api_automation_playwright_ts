@@ -297,6 +297,32 @@ jobs:
 - Ensure TypeScript types are installed: `npm install --save-dev @types/node`
 - Run `npx tsc --noEmit` to check for type errors
 
+## AI Agent Usage
+
+This repository includes AI agent guidance files to help Copilot, Cursor, Claude, or other IDE-based agents generate API automation code consistently.
+
+### Files
+- `api-automation-agent.prompt.md` — prompt template for AI assistants
+- `api-automation-agent.instructions.md` — repository-specific conventions and architecture
+
+### How to use
+1. Open `api-automation-agent.prompt.md` and copy the prompt text.
+2. Paste it into your AI assistant chat or prompt field.
+3. Ask the assistant to generate or modify API automation code, for example:
+   - `Create a new API wrapper and test spec for the bookings endpoint.`
+   - `Add fixtures and a new spec for a payment API.`
+4. Confirm the assistant uses:
+   - `libs/utils/requests.ts` for HTTP methods
+   - `libs/utils/assertions.ts` for validations
+   - JSON fixtures in `test_data/`
+   - wrapper classes in `libs/` and specs in `spec/api/`
+
+### Best practices
+- Prefer fresh, independent test data per test.
+- Avoid shared state unless explicitly required.
+- Use `readTestDataJson()` to load fixtures.
+- Validate responses with `verifyResponseTemplate()` and other assertion helpers.
+
 ## Resources
 
 - [Playwright Documentation](https://playwright.dev/)

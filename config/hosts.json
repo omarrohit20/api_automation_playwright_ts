@@ -2,11 +2,13 @@
     "dev": {
         "reqres": "reqres.in",
         "numberconversion_host": "www.dataaccess.com",
-        "dotesthere": "https://dotesthere.com"
+        "dotesthere": "https://dotesthere.com",
+        "restful_booker": "https://restful-booker.herokuapp.com"
     },
     "qa": {
         "reqres": "reqres.in",
         "numberconversion_host": "www.dataaccess.com",
-        "dotesthere": "https://dotesthere.com"
+        "dotesthere": "https://dotesthere.com",
+        "restful_booker": "https://restful-booker.herokuapp.com"
     }
 }
