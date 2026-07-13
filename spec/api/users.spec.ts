@@ -61,7 +61,8 @@ test.describe('Users Dotesthere', () => {
       ];
 
       for (const testUser of testUsers) {
-        const response = await users.postUserDotesthere(testUser, false);
+        const requestPayload = { ...users.dotesthereCreateUserRequest, name: testUser.name, job: testUser.job };
+        const response = await users.postUserDotesthere(requestPayload, false);
         const status = response.status();
         
         if (status === 201) {

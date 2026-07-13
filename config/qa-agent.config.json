@@ -1,0 +1,45 @@
+{
+  "jira": {
+    "baseUrl": "https://omarrohit20.atlassian.net/",
+    "email": "omarrohit20@gmail.com",
+    "apiTokenEnvVar": "JIRA_API_TOKEN",
+    "projectKey": "PROJ",
+    "defaultIssueType": "Bug",
+    "bugLabels": ["qa-automation", "auto-filed"]
+  },
+  "figma": {
+    "apiTokenEnvVar": "FIGMA_API_TOKEN",
+    "teamId": "",
+    "defaultFileId": ""
+  },
+  "git": {
+    "provider": "github",
+    "repoUrl": "",
+    "tokenEnvVar": "GIT_TOKEN",
+    "defaultBranchPrefix": "qa/"
+  },
+  "environments": {
+    "dev": {
+      "appUrl": "https://opensource-demo.orangehrmlive.com/",
+      "apiBaseUrl": "https://opensource-demo.orangehrmlive.com/web/index.php/",
+      "credentialsEnvVar": "DEV_APP_CREDENTIALS"
+    },
+    "qa": {
+      "appUrl": "https://opensource-demo.orangehrmlive.com/",
+      "apiBaseUrl": "https://opensource-demo.orangehrmlive.com/web/index.php/",
+      "credentialsEnvVar": "QA_APP_CREDENTIALS"
+    }
+  },
+  "artifacts": {
+    "rootDir": "qa-artifacts",
+    "testPlanFile": "test-plan.md",
+    "testCasesFile": "test-cases.md",
+    "scriptChangesFile": "script-changes.md",
+    "reportFile": "report.md",
+    "jiraDraftsFile": "jira-bug-drafts.md"
+  },
+  "seeding": {
+    "apiSeedScriptDir": "libs/seed",
+    "uiSeedScriptDir": "spec/seed"
+  }
+}

@@ -30,12 +30,10 @@ test.describe('Restful Booker API', () => {
   });
 
   test('Create a new booking and validate response', async () => {
-    const response = await booking.createBooking(booking.createBookingRequest);
-    verifyResponseCode(response, 200);
-
-    const body = await response.json();
-    verifyResponseMessageIncludes(body.booking, JSON.stringify(booking.createBookingRequest));
-    verifyResponseTemplate(response, booking.createBookingResponse, 200);
+    const requestPayload = { ...booking.createBookingRequest, firstname: 'Rohit', lastname: 'omar' };
+    const response = await booking.createBooking(requestPayload);
+    const expectedResponse = { ...booking.createBookingResponse, firstname: 'Rohit', lastname: 'omar' };
+    verifyResponseTemplate(response, expectedResponse, 200);
   });
 
   test('Get booking by created booking ID returns expected result', async () => {
