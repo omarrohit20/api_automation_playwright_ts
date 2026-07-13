@@ -10,17 +10,21 @@ It owns test-plan authoring, planning orchestration, the deployment gate, seedin
 
 qa-analyst invokes these via the Agent tool, so each pattern's/discipline's rules live in one place instead of being duplicated across agent definitions. For step 1, qa-analyst writes `test-plan.md` itself, pulls Figma frames itself (qa-test-designer doesn't), and folds qa-test-designer's `qa/test-cases.md` output into its own `qa-artifacts/<KEY>/test-cases.md`.
 
+## Test pyramid
+
+qa-analyst steers every Epic/Story's test-case mix toward **60-70% API, 20-30% UI, 5-10% manual-only E2E**. Backend-verifiable behavior goes to the API layer (including endpoints discovered only via network-call capture, see step 3), the UI layer is reserved for what can only be checked by rendering/interacting, and a small slice of high-value cross-system journeys stay manual by design — never automated. The achieved mix is reported in `test-plan.md` and the final report; if an Epic genuinely can't hit this ratio (e.g. UI-only, no API surface), the agent says so instead of forcing test cases into the wrong layer.
+
 ## What it does
 
 Given a Jira Epic/Story key (e.g. `PROJ-1234`), it runs seven steps in order:
 
-1. **Test plan and test cases** — pulls the Epic and every linked Story, Task, and Sub-task from Jira, plus linked Figma frames; writes `test-plan.md` itself, and delegates test case design to `qa-test-designer`, folding its output into `test-cases.md`. If they already exist, it updates only what changed.
-2. **Deployment gate** — confirms the target environment is up and the Epic/Story's changes are actually deployed there. If the env is down or changes are missing, it **stops and reports a blocker** instead of continuing.
-3. **Seed data** — ensures API and UI seed data is scripted (not manual), extending existing seed scripts where possible; delegates new wrapper methods/UI flows to the agents below.
-4. **Automation scripts** — delegates to `api-automation-architect` and `ui-automation-architect` (see above) to create/update Playwright API and UI scripts, following this repo's existing conventions (or any `.cursor/rules` / Copilot instructions present, which take precedence) rather than inventing new patterns.
-5. **Test execution** — runs only the tests impacted by the Epic/Story, plus the sanity suite; lists manual-only scenarios it cannot execute.
-6. **Report analysis** — parses automation results and evidence (screenshots/videos/traces), and distinguishes automation defects from genuine behavior deviations from the Epic/Story spec.
-7. **Reporting** — writes a high-level + detailed report, and drafts Jira-formatted bug reports for genuine failures. **It does not file real Jira tickets on its own** — it asks for confirmation first.
+1. **Test plan and test cases** — pulls the Epic and every linked Story, Task, and Sub-task from Jira, plus linked Figma frames; writes `test-plan.md` itself (including the test-pyramid mix), and delegates test case design to `qa-test-designer` (targeting that mix), folding its output into `test-cases.md`. If they already exist, it updates only what changed.
+2. **Deployment gate + Figma parity check** — confirms the target environment is up and the Epic/Story's changes are actually deployed there; if Figma frames were linked, also compares the live app against them and logs discrepancies. If the env is down or changes are missing, it **stops and reports a blocker** instead of continuing.
+3. **Seed data + network capture** — ensures API and UI seed data is scripted (not manual), extending existing seed scripts where possible; while seeding, captures every distinct network call the app makes into `network-capture.md` so undocumented API endpoints surface for automation.
+4. **Automation scripts** — delegates to `api-automation-architect` (using captured network shapes for API test cases, including endpoints not explicitly named in the ticket) and `ui-automation-architect` (see above) to create/update Playwright API and UI scripts, following this repo's existing conventions (or any `.cursor/rules` / Copilot instructions present, which take precedence) rather than inventing new patterns.
+5. **Test execution** — runs **only** the tests impacted by the Epic/Story — never the full suite or unrelated pre-existing specs. Failing tests get **at most one retry**; it does not loop trying fixes indefinitely — if a failure survives one retry and one considered fix attempt, it's carried into analysis as a possible genuine issue rather than debugged forever. Manual-only scenarios are walked live via MCP where feasible and otherwise listed as requiring manual execution.
+6. **Report analysis** — parses automation results and evidence (screenshots/videos/traces), distinguishes automation defects from genuine behavior deviations from the Epic/Story spec, and folds in any Figma-vs-app discrepancies from step 2.
+7. **Reporting** — writes both a detailed `report.md` and a short, high-level `execution-summary.md`, and drafts Jira-formatted bug reports for genuine failures. Both report files are re-read from disk to confirm they were actually persisted before the run is declared complete — a chat summary alone doesn't count as this step being done. **It does not file real Jira tickets on its own** — it asks for confirmation first.
 
 ## Setup
 
@@ -58,10 +62,12 @@ Everything the agent produces for Epic/Story `<KEY>` is saved under `qa-artifact
 
 | File | Produced in step | Contents |
 |---|---|---|
-| `test-plan.md` | 1 | Scope, environments, entry/exit criteria, risk areas — authored by qa-analyst itself |
+| `test-plan.md` | 1 | Scope, environments, entry/exit criteria, risk areas, test-pyramid mix — authored by qa-analyst itself |
 | `test-cases.md` | 1 | Per-issue test case tables (steps, expected result, automated Y/N, priority) — merged from qa-test-designer's `qa/test-cases.md`, plus Figma-derived UI notes |
-| `script-changes.md` | 4 | Every spec/wrapper/fixture file created or modified, with why |
-| `report.md` | 7 | High-level + detailed report, results, deviations, failure evidence |
+| `network-capture.md` | 3 | Distinct API endpoints observed during UI seeding/test execution (method, path, status, request/response shape) |
+| `script-changes.md` | 4 | Every spec/wrapper/page-object/fixture file created or modified, with why |
+| `report.md` | 7 | Detailed report — results, deviations, failure evidence, Figma parity findings |
+| `execution-summary.md` | 7 | Short, high-level pass/fail + go/no-go summary, readable in under a minute |
 | `jira-bug-drafts.md` | 7 | Draft Jira bug reports for genuine failures, pending your approval |
 
 Re-running the agent for the same key updates these files in place rather than overwriting them wholesale — it diffs against current Jira/Figma state and only changes what changed.
@@ -74,8 +80,8 @@ Step 7 only **drafts** bugs in `jira-bug-drafts.md`. The agent will show you the
 
 The agent uses two distinct Playwright surfaces, deliberately kept separate:
 
-- **Playwright CLI** (`npx playwright ...`, via Bash) — for anything script-authoring and test-execution related: `codegen` to derive selectors when scaffolding a new UI spec, `test`/`test --grep` to run impacted specs and sanity, `test --list` to confirm scope, and `show-report`/`test-results` to analyze results.
-- **Playwright MCP server** (`mcp__playwright__*` tools) — for live, interactive browser work: confirming the deployment gate actually rendered the new UI, walking UI seed flows that have no API shortcut, inspecting live DOM/selectors before writing a spec, running feasible manual-only scenarios as observed (not automated) checks, and reproducing failures for root-cause analysis (`browser_snapshot`, `browser_console_messages`, `browser_network_requests`).
+- **Playwright CLI** (`npx playwright ...`, via Bash) — for anything script-authoring and test-execution related: `codegen` to derive selectors when scaffolding a new UI spec, `test`/`test --grep` to run **only** impacted specs, `test --list` to confirm scope, and `show-report`/`test-results` to analyze results.
+- **Playwright MCP server** (`mcp__playwright__*` tools) — for live, interactive browser work: confirming the deployment gate actually rendered the new UI, comparing the live app against linked Figma frames, walking UI seed flows that have no API shortcut while capturing the network calls they trigger (`browser_network_requests`), inspecting live DOM/selectors before writing a spec, running feasible manual-only scenarios as observed (not automated) checks, and reproducing failures for root-cause analysis (`browser_snapshot`, `browser_console_messages`, `browser_network_requests`).
 
 If the Playwright MCP server isn't connected in your agent runner, the agent will still complete Jira/Figma-based planning and CLI-driven test execution, but will flag any step that needed live browser interaction (deployment gate's UI check, UI seeding, live selector discovery, manual-scenario walkthroughs, failure repro) as blocked/skipped rather than fabricating the result.
 
@@ -83,4 +89,7 @@ If the Playwright MCP server isn't connected in your agent runner, the agent wil
 
 - The agent talks to Jira/Figma via their REST APIs directly using the tokens in `.env` — it does not rely on Jira/Figma MCP servers, since those may not be authorized in headless or non-interactive runs.
 - It follows this repo's existing wrapper-class + JSON-fixture + template-assertion conventions for API tests (see the main [README.md](README.md) and [CLAUDE.md](CLAUDE.md)); it does not introduce a different pattern.
-- It only executes tests impacted by the Epic/Story plus sanity — not the full suite — unless impact analysis shows the change is repo-wide.
+- **It only executes tests impacted by the Epic/Story — never the full suite and never other pre-existing, unrelated specs.**
+- **Retry policy is strict:** a failing test gets at most one retry, plus at most one considered fix-and-retry if the cause looks like an obvious automation defect. Anything that still fails after that is treated as a possible genuine application issue for step 6, not looped on indefinitely — the assumption shifts from "my script is wrong" to "this might be the application."
+- API test coverage isn't limited to what the Jira ticket names explicitly — network calls captured during seeding surface real endpoints (including undocumented ones) that get turned into API tests, which is how the agent pushes toward the 60-70% API slice of the test pyramid.
+- When Figma frames are linked, the agent checks the live app against them during the deployment gate and folds discrepancies into the report — this is best-effort visual/structural comparison via the Playwright MCP server, not a pixel-perfect diff tool.

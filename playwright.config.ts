@@ -29,19 +29,42 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    // --- API projects (jsonplaceholder.typicode.com) ---
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testMatch: 'spec/api/**/*.spec.ts',
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      testMatch: 'spec/api/**/*.spec.ts',
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      testMatch: 'spec/api/**/*.spec.ts',
+    },
+
+    // --- UI auth setup (runs before pim-ui) ---
+    {
+      name: 'auth-setup',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: 'spec/ui/auth.setup.ts',
+    },
+
+    // --- PIM UI project (OrangeHRM) ---
+    {
+      name: 'pim-ui',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://opensource-demo.orangehrmlive.com',
+        storageState: 'playwright/.auth/admin.json',
+      },
+      testMatch: 'spec/ui/pim/**/*.spec.ts',
+      dependencies: ['auth-setup'],
     },
   ],
 
