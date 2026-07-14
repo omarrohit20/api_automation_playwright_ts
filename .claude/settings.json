@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_network_request",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\git\\\\api_automation_playwright_ts\\\\spec\\\\ui\\\\pim\")",
+      "Bash(Out-Null)",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\git\\\\api_automation_playwright_ts\\\\spec\\\\ui\\\\pim\")",
+      "Bash(curl -s \"https://opensource-demo.orangehrmlive.com/web/index.php/auth/login\")",
+      "Bash(curl -sv \"https://opensource-demo.orangehrmlive.com/web/index.php/auth/login\")",
+      "Bash(curl -s \"https://opensource-demo.orangehrmlive.com/web/dist/js/app.js?v=1783336755185\")",
+      "Bash(curl -sb /tmp/test_cookies.txt -X POST https://opensource-demo.orangehrmlive.com/web/index.php/api/v2/pim/employees -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{\"firstName\":\"AutoTest\",\"lastName\":\"Employee\",\"middleName\":\"QA\"}')",
+      "Bash(curl -sb /tmp/test_cookies.txt 'https://opensource-demo.orangehrmlive.com/web/index.php/api/v2/pim/employees?limit=3&offset=0&model=list' -H 'Accept: application/json')",
+      "Bash(python3)"
+    ]
+  }
+}
