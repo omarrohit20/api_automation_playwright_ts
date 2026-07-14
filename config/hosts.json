@@ -3,12 +3,14 @@
         "reqres": "reqres.in",
         "numberconversion_host": "www.dataaccess.com",
         "dotesthere": "https://dotesthere.com",
-        "restful_booker": "https://restful-booker.herokuapp.com"
+        "restful_booker": "https://restful-booker.herokuapp.com",
+        "orangehrm": "https://opensource-demo.orangehrmlive.com/web/index.php"
     },
     "qa": {
         "reqres": "reqres.in",
         "numberconversion_host": "www.dataaccess.com",
         "dotesthere": "https://dotesthere.com",
-        "restful_booker": "https://restful-booker.herokuapp.com"
+        "restful_booker": "https://restful-booker.herokuapp.com",
+        "orangehrm": "https://opensource-demo.orangehrmlive.com/web/index.php"
     }
 }
