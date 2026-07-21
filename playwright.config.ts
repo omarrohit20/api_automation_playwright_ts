@@ -66,6 +66,30 @@ export default defineConfig({
       testMatch: 'spec/ui/pim/**/*.spec.ts',
       dependencies: ['auth-setup'],
     },
+
+    // --- Leave UI project (OrangeHRM) ---
+    {
+      name: 'leave-ui',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://opensource-demo.orangehrmlive.com',
+        storageState: 'playwright/.auth/admin.json',
+      },
+      testMatch: 'spec/ui/leave/**/*.spec.ts',
+      dependencies: ['auth-setup'],
+    },
+
+    // --- Admin UI project (OrangeHRM — User Management) ---
+    {
+      name: 'admin-ui',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'https://opensource-demo.orangehrmlive.com',
+        storageState: 'playwright/.auth/admin.json',
+      },
+      testMatch: 'spec/ui/admin/**/*.spec.ts',
+      dependencies: ['auth-setup'],
+    },
   ],
 
   /* Global setup */

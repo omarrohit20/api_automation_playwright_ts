@@ -12,10 +12,13 @@ setup('authenticate as Admin', async ({ page }) => {
   const credentials: { username: string; password: string } = JSON.parse(rawCredentials);
 
   await page.goto('https://opensource-demo.orangehrmlive.com/web/index.php/auth/login');
+  // Wait for the Vue SPA to render the login form. Use name-attribute selectors rather than
+  // placeholder text so this setup is resilient to UI language changes on the shared demo server.
+  await page.waitForSelector('input[name="username"]', { timeout: 60000 });
 
-  await page.getByPlaceholder('Username').fill(credentials.username);
-  await page.getByPlaceholder('Password').fill(credentials.password);
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.locator('input[name="username"]').fill(credentials.username);
+  await page.locator('input[name="password"]').fill(credentials.password);
+  await page.locator('button[type="submit"]').click();
 
   await page.waitForURL('**/dashboard/**');
 
